@@ -1,6 +1,6 @@
-namespace AdventOfCode;
+namespace AdventOfCode2023;
 
-public static class Adv01
+public static class Day01
 {
     private static SortedList<int, int> FindAllDigitsInString(string s)
     {
@@ -53,7 +53,7 @@ public static class Adv01
     public static void Execute()
     {
         int sum = 0;
-        StringReader sr = new(File.ReadAllText("./adv1/input.txt"));
+        StringReader sr = new(File.ReadAllText("./Day01/input.txt"));
         string? line = sr.ReadLine();
         while (line != null)
         {
@@ -68,6 +68,6 @@ public static class Adv01
             line = sr.ReadLine();
         }
 
-        Console.WriteLine($"Sum: {sum}");
+        Console.WriteLine($"[AoC 2023 - Day 01] Result: {sum}");
     }
 }
