@@ -52,7 +52,8 @@ public static class Day01
 
     public static void Execute()
     {
-        int sum = 0;
+        int sumOfAllCalibrationValues = 0;
+        int sumOfAllCalibrationValuesV2 = 0;
         StringReader sr = new(File.ReadAllText("./Day01/input.txt"));
         string? line = sr.ReadLine();
         while (line != null)
@@ -60,14 +61,16 @@ public static class Day01
             if (line != string.Empty)
             {
                 SortedList<int, int> numbers = FindAllDigitsInString(line);
+                sumOfAllCalibrationValues += numbers.FirstOrDefault().Value*10+numbers.LastOrDefault().Value;
                 foreach(var (key, value) in FindAllDigitsAsTextInString(line)){
                     numbers.Add(key, value);
                 }
-                sum += numbers.FirstOrDefault().Value*10+numbers.LastOrDefault().Value;
+                sumOfAllCalibrationValuesV2 += numbers.FirstOrDefault().Value*10+numbers.LastOrDefault().Value;
             }
             line = sr.ReadLine();
         }
 
-        Console.WriteLine($"[AoC 2023 - Day 01] Result: {sum}");
+        Console.WriteLine($"[AoC 2023 - Day 01 - Part 1] Result: {sumOfAllCalibrationValues}");
+        Console.WriteLine($"[AoC 2023 - Day 01 - Part 2] Result: {sumOfAllCalibrationValuesV2}");
     }
 }
