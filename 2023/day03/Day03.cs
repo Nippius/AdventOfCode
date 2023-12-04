@@ -1,11 +1,12 @@
 namespace AdventOfCode2023;
 
-public record PartNumber(int StartX, int EndX, int Y, int Value) { }
-public record Symbol(int X, int Y, char Value) { }
-public record SymbolWithPartNumbers(Symbol Symbol, IList<PartNumber> PartNumbers){}
 
 public static class Day03
 {
+    private record PartNumber(int StartX, int EndX, int Y, int Value) { }
+    private record Symbol(int X, int Y, char Value) { }
+    private record SymbolWithPartNumbers(Symbol Symbol, IList<PartNumber> PartNumbers) { }
+
     private const char GearSymbol = '*';
 
     private static IList<SymbolWithPartNumbers> ParseEngineLayout(StringReader sr)
@@ -14,7 +15,7 @@ public static class Day03
         IList<PartNumber> PartNumbers = [];
         IList<Symbol> Symbols = [];
         IList<SymbolWithPartNumbers> SymbolsWithPartNumbers = [];
-        
+
         // Parse input to get all symbols and part numbers separately
         string? line = sr.ReadLine();
         while (line != null)
@@ -53,14 +54,15 @@ public static class Day03
         }
 
         // Pair up each symbol with the corresponding part numbers
-        foreach(Symbol s in Symbols){
+        foreach (Symbol s in Symbols)
+        {
             SymbolsWithPartNumbers.Add(new SymbolWithPartNumbers(s, GetAllPartNumbersForSymbol(s, PartNumbers)));
         }
 
         return SymbolsWithPartNumbers;
     }
 
-    private static IList<PartNumber> GetAllPartNumbersForSymbol(Symbol Symbol, IList<PartNumber> PartNumbers )
+    private static IList<PartNumber> GetAllPartNumbersForSymbol(Symbol Symbol, IList<PartNumber> PartNumbers)
     {
         IList<PartNumber> PartNumbersForSymbol = [];
         foreach (PartNumber p in PartNumbers)
@@ -82,7 +84,7 @@ public static class Day03
         return PartNumbersForSymbol;
     }
 
-    public static int SumOfAllThePartNumbers(IList<SymbolWithPartNumbers> SymbolsWithPartNumbers)
+    private static int SumOfAllThePartNumbers(IList<SymbolWithPartNumbers> SymbolsWithPartNumbers)
     {
         int sum = 0;
         foreach (SymbolWithPartNumbers symbolWithPartNumbers in SymbolsWithPartNumbers)
@@ -95,7 +97,7 @@ public static class Day03
         return sum;
     }
 
-    public static int SumOfAllGearRatios(IList<SymbolWithPartNumbers> SymbolsWithPartNumbers)
+    private static int SumOfAllGearRatios(IList<SymbolWithPartNumbers> SymbolsWithPartNumbers)
     {
         int sum = 0;
         foreach (SymbolWithPartNumbers symbolWithPartNumbers in SymbolsWithPartNumbers)
