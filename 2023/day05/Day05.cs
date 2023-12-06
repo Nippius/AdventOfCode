@@ -32,17 +32,17 @@ public static class Day05
                 {
                     return new InputRange(Destination + (inputRange.Start - Source), Destination + Length);
                 }
-                else if ()
+                else if (inputRange.Start < Source && inputRange.End > SourceEnd)
                 {
-
+                    return new InputRange(Destination + (inputRange.Start - Source), Destination + (inputRange.End - inputRange.Start));
                 }
-                else if ()
+                else if (inputRange.Start >= Source && inputRange.Start < SourceEnd && inputRange.End > Source && inputRange.End <= SourceEnd)
                 {
-
+                    return new InputRange(Destination, Destination + Length);
                 }
                 else
                 {
-
+                    return new InputRange(Destination, Destination + (inputRange.End - Source));
                 }
             }
         }
@@ -50,6 +50,8 @@ public static class Day05
         private class Map(string Name)
         {
             private List<RangeReMapper> rangeReMappers = [];
+
+            public string Name { get; } = Name;
 
             public void AddMapRange(long destination, long source, long length)
             {
@@ -149,6 +151,35 @@ public static class Day05
             return location;
         }
 
+        private long GetLowestLocationVersion3(IList<InputRange> ranges)
+        {
+            long location = long.MaxValue;
+
+            List<InputRange> newInputRanges = [.. ranges];
+            List<InputRange> tempNewInputRanges = [];
+
+            foreach (Map map in Maps)
+            {
+                Console.WriteLine(map.Name);
+                foreach (InputRange range in newInputRanges)
+                {
+                    tempNewInputRanges.AddRange(map.MapInputRange(range));
+                }
+                newInputRanges=tempNewInputRanges;
+                tempNewInputRanges = [];
+            }
+
+            //TODO calculate lowest location
+            foreach (InputRange range in newInputRanges)
+            {
+                if (range.Start < location)
+                {
+                    location = range.Start;
+                }
+            }
+            return location;
+        }
+
         public long GetLowestLocationNumberFromSeeds()
         {
             long res = long.MaxValue;
@@ -177,7 +208,7 @@ public static class Day05
                 seedRange.Add(new InputRange(startingSeed, length));
             }
 
-            return GetLowestLocationRecursive(seedRange, 0);
+            return GetLowestLocationVersion3(seedRange);
         }
     }
 
