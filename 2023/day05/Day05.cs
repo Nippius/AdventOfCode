@@ -8,10 +8,13 @@ public static class Day05
         {
             public long Start { get; } = RangeStart;
             public long Length { get; } = Length;
+            public long End { get; } = RangeStart + Length;
         }
 
         private class RangeReMapper(long Destination, long Source, long Length)
         {
+            private long SourceEnd = Source + Length;
+
             public bool ValueFitsRange(long value)
             {
                 return value >= Source && value <= (Source + Length);
@@ -20,6 +23,27 @@ public static class Day05
             public long RemapValue(long input)
             {
                 return Destination + (input - Source);
+            }
+
+            public InputRange RemapInputRange(InputRange inputRange)
+            {
+                // Break the range into several subRanges based on the remapper values
+                if (inputRange.Start >= Source && inputRange.Start <= SourceEnd && inputRange.End > SourceEnd)
+                {
+                    return new InputRange(Destination + (inputRange.Start - Source), Destination + Length);
+                }
+                else if ()
+                {
+
+                }
+                else if ()
+                {
+
+                }
+                else
+                {
+
+                }
             }
         }
 
@@ -44,12 +68,14 @@ public static class Day05
                 return value;
             }
 
-            public IList<InputRange> MapInputRange(InputRange range){
+            public IList<InputRange> MapInputRange(InputRange range)
+            {
                 // This method assumes ranges never overlap
-                IList<InputRange> newInputRanges = [];
+                List<InputRange> newInputRanges = [];
 
-                foreach(RangeReMapper remapper in rangeReMappers){
-
+                foreach (RangeReMapper remapper in rangeReMappers)
+                {
+                    newInputRanges.Add(remapper.RemapInputRange(range));
                 }
 
                 return newInputRanges;
@@ -94,6 +120,35 @@ public static class Day05
             ParseMaps(sr);
         }
 
+        private long GetLowestLocationRecursive(IList<InputRange> ranges, int mapIndex)
+        {
+            long location = long.MaxValue;
+
+            if (mapIndex < Maps.Count)
+            {
+                Map map = Maps[mapIndex];
+                List<InputRange> newInputRanges = [];
+
+                // Calculate new seed ranges based on the map
+                foreach (InputRange range in ranges)
+                {
+                    newInputRanges.AddRange(map.MapInputRange(range));
+                }
+
+                return GetLowestLocationRecursive(newInputRanges, mapIndex + 1);
+            }
+
+            //TODO calculate lowest location
+            foreach (InputRange range in ranges)
+            {
+                if (range.Start < location)
+                {
+                    location = range.Start;
+                }
+            }
+            return location;
+        }
+
         public long GetLowestLocationNumberFromSeeds()
         {
             long res = long.MaxValue;
@@ -107,32 +162,6 @@ public static class Day05
                 if (val < res) { res = val; };
             }
             return res;
-        }
-
-        private long GetLowestLocationRecursive(IList<InputRange> ranges, int mapIndex)
-        {
-            long location = long.MaxValue;
-
-            if (mapIndex < Maps.Count)
-            {
-                Map map = Maps[mapIndex];
-                List<InputRange> newInputRanges = [];
-
-                // Calculate new seed ranges based on the map
-                foreach(InputRange range in ranges){
-                    newInputRanges.AddRange(map.MapInputRange(range));
-                }
-
-                return GetLowestLocationRecursive(newInputRanges, mapIndex + 1);
-            }
-
-            //TODO calculate lowest location
-            foreach(InputRange range in ranges){
-                if(range.Start < location){
-                    location = range.Start;
-                }
-            }
-            return location;
         }
 
         public long GetLowestLocationNumberFromSeedRange()
@@ -155,7 +184,8 @@ public static class Day05
     public static void Execute()
     {
         StringReader sr = new(File.ReadAllText("./day05/input.txt"));
-        Almanac almanac = new Almanac();
+
+        Almanac almanac = new();
         almanac.ParseInput(sr);
 
         Console.WriteLine($"[AoC 2023 - Day 05 - Part 1] Result: {almanac.GetLowestLocationNumberFromSeeds()}");
