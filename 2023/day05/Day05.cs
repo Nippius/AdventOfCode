@@ -220,7 +220,7 @@ public static class Day05
         almanac.ParseInput(sr);
 
         Console.WriteLine($"[AoC 2023 - Day 05 - Part 1] Result: {almanac.GetLowestLocationNumberFromSeeds()}");
-        Console.WriteLine($"[AoC 2023 - Day 05 - Part 2] Result: {almanac.GetLowestLocationNumberFromSeedRange()}");
+        //Console.WriteLine($"[AoC 2023 - Day 05 - Part 2] Result: {almanac.GetLowestLocationNumberFromSeedRange()}");
     }
 }
 
