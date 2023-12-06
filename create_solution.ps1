@@ -17,17 +17,16 @@ public static class Day$formatedDay
     public static void Execute()
     {
         int sum = 0;
-        using (StringReader sr = new(File.ReadAllText("./day06/input.txt")))
+        using StringReader sr = new(File.ReadAllText("./day06/input.txt"));
+
+        string? line = sr.ReadLine();
+        while (line != null)
         {
-            string? line = sr.ReadLine();
-            while (line != null)
+            if (line != string.Empty)
             {
-                if (line != string.Empty)
-                {
-                    //TODO
-                }
-                line = sr.ReadLine();
+                //TODO
             }
+            line = sr.ReadLine();
         }
 
         Console.WriteLine($"[AoC $Year - Day $formatedDay - Part 1] Result: {sum}");
