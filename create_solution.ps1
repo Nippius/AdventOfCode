@@ -14,11 +14,7 @@ namespace AdventOfCode$Year;
 
 public static class Day$formatedDay
 {
-    public static void Execute()
-    {
-        int sum = 0;
-        using StringReader sr = new(File.ReadAllText("./day06/input.txt"));
-
+    public static int ParseInput(StringReader sr){
         string? line = sr.ReadLine();
         while (line != null)
         {
@@ -28,7 +24,16 @@ public static class Day$formatedDay
             }
             line = sr.ReadLine();
         }
+        return 0;
+    }
 
+    public static void Execute()
+    {
+        int sum = 0;
+        using StringReader sr = new(File.ReadAllText("./day06/input.txt"));
+
+        sum = ParseInput(sr);
+        
         Console.WriteLine($"[AoC $Year - Day $formatedDay - Part 1] Result: {sum}");
         Console.WriteLine($"[AoC $Year - Day $formatedDay - Part 2] Result: {sum}");
     }
