@@ -45,7 +45,7 @@ public static class Day04
         public static IList<Card> ParseCards(StringReader sr)
         {
             IList<Card> cards = [];
-            string? line = sr.ReadLine();
+            string line = sr.ReadLine();
             while (line != null)
             {
                 if (line != string.Empty)

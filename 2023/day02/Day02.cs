@@ -130,7 +130,7 @@ public static class Day02
     {
         IList<Game> games = new List<Game>();
         StringReader sr = new(File.ReadAllText("./day02/input.txt"));
-        string? line = sr.ReadLine();
+        string line = sr.ReadLine();
         while (line != null)
         {
             if (line != string.Empty)
