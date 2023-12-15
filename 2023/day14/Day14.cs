@@ -41,7 +41,7 @@ public static class Day14
     private static int[,] ParseInput(StringReader sr)
     {
         int[,] board = new int[100, 100];
-        string? line = sr.ReadLine();
+        string line = sr.ReadLine();
         int x = 0;
         while (line != null)
         {

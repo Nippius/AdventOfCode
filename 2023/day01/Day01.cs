@@ -55,7 +55,7 @@ public static class Day01
         int sumOfAllCalibrationValues = 0;
         int sumOfAllCalibrationValuesV2 = 0;
         StringReader sr = new(File.ReadAllText("./Day01/input.txt"));
-        string? line = sr.ReadLine();
+        string line = sr.ReadLine();
         while (line != null)
         {
             if (line != string.Empty)

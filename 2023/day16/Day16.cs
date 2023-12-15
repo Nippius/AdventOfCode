@@ -6,7 +6,7 @@ public static class Day16
     {
         int sum = 0;
         StringReader sr = new(File.ReadAllText("./day16/input.txt"));
-        string? line = sr.ReadLine();
+        string line = sr.ReadLine();
         while (line != null)
         {
             if (line != string.Empty)

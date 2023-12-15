@@ -17,7 +17,7 @@ public static class Day03
         IList<SymbolWithPartNumbers> SymbolsWithPartNumbers = [];
 
         // Parse input to get all symbols and part numbers separately
-        string? line = sr.ReadLine();
+        string line = sr.ReadLine();
         while (line != null)
         {
             for (int x = 0; x < line.Length; x++)
