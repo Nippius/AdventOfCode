@@ -1,4 +1,5 @@
 namespace AdventOfCode2023;
+
 public static class Day15
 {
     private class Box

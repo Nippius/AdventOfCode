@@ -1,4 +1,4 @@
-
+// TODO find a better sollution to Part2 using Memoization and Feature scaling
 namespace AdventOfCode2023;
 
 public static class Day14
