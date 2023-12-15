@@ -1,6 +1,5 @@
 namespace AdventOfCode2023;
 
-
 public static class Day03
 {
     private record PartNumber(int StartX, int EndX, int Y, int Value) { }
