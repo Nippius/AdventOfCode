@@ -57,7 +57,7 @@ public static class Day16
         }
     }
 
-    private static void ParseInput(ref char[,] contraption, StringReader sr)
+    private static void ParseInput(char[,] contraption, StringReader sr)
     {
         int x = 0;
         string line = sr.ReadLine();
@@ -77,7 +77,7 @@ public static class Day16
     }
 
     // Return 1 if a tile was energized by a passing beam. 0 if it was already energized
-    private static int CalculateResultingTile(ref char[,] contraption, ref char[,] tileState, Beam beam)
+    private static int CalculateResultingTile(char[,] contraption, char[,] tileState, Beam beam)
     {
         if (tileState[beam.X, beam.Y] == default)
         {
@@ -185,7 +185,7 @@ public static class Day16
         return true;
     }
 
-    private static bool IsBeamLooping(Beam beam, ref char[,] tileState)
+    private static bool IsBeamLooping(Beam beam, char[,] tileState)
     {
         // A beam is looping if the resulting contraption already has a beam symbol
         // in the same direction the beam is already going.
@@ -201,7 +201,7 @@ public static class Day16
         }
     }
 
-    private static int FireLaserBeam(ref char[,] contraption, Beam startingBeam)
+    private static int FireLaserBeam(char[,] contraption, Beam startingBeam)
     {
         char[,] resultingTileState = new char[CONTRAPTION_SIZE, CONTRAPTION_SIZE];
         int energizedTilesCount = 0;
@@ -215,12 +215,12 @@ public static class Day16
 
             while (beam.X >= 0 && beam.X < CONTRAPTION_SIZE && beam.Y >= 0 && beam.Y < CONTRAPTION_SIZE)
             {
-                if (IsBeamLooping(beam, ref resultingTileState))
+                if (IsBeamLooping(beam, resultingTileState))
                 {
                     break;
                 }
 
-                energizedTilesCount += CalculateResultingTile(ref contraption, ref resultingTileState, beam);
+                energizedTilesCount += CalculateResultingTile(contraption, resultingTileState, beam);
 
                 char tile = contraption[beam.X, beam.Y];
                 switch (tile)
@@ -250,25 +250,25 @@ public static class Day16
         return energizedTilesCount;
     }
 
-    private static int CountEnergizedTiles(ref char[,] contraption)
+    private static int CountEnergizedTiles(char[,] contraption)
     {
-        return FireLaserBeam(ref contraption, new Beam(0, 0, Direction.Right));
+        return FireLaserBeam(contraption, new Beam(0, 0, Direction.Right));
     }
 
-    private static int GetMostEnergizedTiles(ref char[,] contraption)
+    private static int GetMostEnergizedTiles(char[,] contraption)
     {
         int mostEnergizedTiles = 0;
 
         for (int x = 0; x < CONTRAPTION_SIZE; x++)
         {
-            mostEnergizedTiles = Math.Max(FireLaserBeam(ref contraption, new Beam(x, CONTRAPTION_SIZE, Direction.Left)), mostEnergizedTiles);
-            mostEnergizedTiles = Math.Max(FireLaserBeam(ref contraption, new Beam(x, 0, Direction.Right)), mostEnergizedTiles);
+            mostEnergizedTiles = Math.Max(FireLaserBeam(contraption, new Beam(x, CONTRAPTION_SIZE, Direction.Left)), mostEnergizedTiles);
+            mostEnergizedTiles = Math.Max(FireLaserBeam(contraption, new Beam(x, 0, Direction.Right)), mostEnergizedTiles);
         }
 
         for (int y = 0; y < CONTRAPTION_SIZE; y++)
         {
-            mostEnergizedTiles = Math.Max(FireLaserBeam(ref contraption, new Beam(CONTRAPTION_SIZE, y, Direction.Up)), mostEnergizedTiles);
-            mostEnergizedTiles = Math.Max(FireLaserBeam(ref contraption, new Beam(0, y, Direction.Down)), mostEnergizedTiles);
+            mostEnergizedTiles = Math.Max(FireLaserBeam(contraption, new Beam(CONTRAPTION_SIZE, y, Direction.Up)), mostEnergizedTiles);
+            mostEnergizedTiles = Math.Max(FireLaserBeam(contraption, new Beam(0, y, Direction.Down)), mostEnergizedTiles);
         }
         return mostEnergizedTiles;
     }
@@ -278,9 +278,9 @@ public static class Day16
         char[,] contraption = new char[CONTRAPTION_SIZE, CONTRAPTION_SIZE];
         using StringReader sr = new(File.ReadAllText("./day16/input.txt"));
 
-        ParseInput(ref contraption, sr);
+        ParseInput(contraption, sr);
 
-        Console.WriteLine($"[AoC 2023 - Day 16 - Part 1] Result: {CountEnergizedTiles(ref contraption)}");
-        Console.WriteLine($"[AoC 2023 - Day 16 - Part 2] Result: {GetMostEnergizedTiles(ref contraption)}");
+        Console.WriteLine($"[AoC 2023 - Day 16 - Part 1] Result: {CountEnergizedTiles(contraption)}");
+        Console.WriteLine($"[AoC 2023 - Day 16 - Part 2] Result: {GetMostEnergizedTiles(contraption)}");
     }
 }
