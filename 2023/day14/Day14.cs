@@ -3,7 +3,7 @@ namespace AdventOfCode2023;
 
 public static class Day14
 {
-    delegate void ActionRef<T0, T1, T2>(ref T0 board, T1 coord, T2 dir);
+    delegate void ActionRef<T0, T1, T2>(T0 board, T1 coord, T2 dir);
 
     private enum TiltDirection
     {
@@ -66,7 +66,7 @@ public static class Day14
         return board;
     }
 
-    private static void TiltBoard(ref int[,] board, TiltDirection direction)
+    private static void TiltBoard(int[,] board, TiltDirection direction)
     {
         ActionRef<int[,], int, int> rollFunc = RollRocksVertically; // Stop compiler complaining about nulls
         int inc = 0;
@@ -101,11 +101,11 @@ public static class Day14
 
         for (int i = 0; i < idx; i++)
         {
-            rollFunc(ref board, i, inc);
+            rollFunc(board, i, inc);
         }
     }
 
-    private static void RollRocksHorizontally(ref int[,] board, int x, int dir)
+    private static void RollRocksHorizontally(int[,] board, int x, int dir)
     {
         if (dir > 0)
         {
@@ -157,7 +157,7 @@ public static class Day14
         }
     }
 
-    private static void RollRocksVertically(ref int[,] board, int y, int dir)
+    private static void RollRocksVertically(int[,] board, int y, int dir)
     {
         if (dir > 0)
         {
@@ -229,7 +229,7 @@ public static class Day14
 
     private static int TotalLoadOnTheSupportBeams(int[,] board)
     {
-        TiltBoard(ref board, TiltDirection.North);
+        TiltBoard(board, TiltDirection.North);
 
         return CalculateTotalLoad(board);
     }
@@ -238,17 +238,17 @@ public static class Day14
     {
         for (int i = 0; i < 1000; i++) // After a few cycles no more changes happen so we can ignore the rest
         {
-            SpinCycle(ref board);
+            SpinCycle(board);
         }
 
         return CalculateTotalLoad(board);
 
-        static void SpinCycle(ref int[,] board)
+        static void SpinCycle(int[,] board)
         {
-            TiltBoard(ref board, TiltDirection.North);
-            TiltBoard(ref board, TiltDirection.West);
-            TiltBoard(ref board, TiltDirection.South);
-            TiltBoard(ref board, TiltDirection.East);
+            TiltBoard(board, TiltDirection.North);
+            TiltBoard(board, TiltDirection.West);
+            TiltBoard(board, TiltDirection.South);
+            TiltBoard(board, TiltDirection.East);
         }
     }
 
