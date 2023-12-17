@@ -1,4 +1,3 @@
-// TODO find a better sollution to Part2 using Memoization and Feature scaling
 namespace AdventOfCode2023;
 
 public static class Day14
@@ -17,30 +16,13 @@ public static class Day14
     private const int ROUNDED_ROCK = 1;
     private const char EMPTY_SPACE_SYMB = '.';
     private const int EMPTY_SPACE = 0;
-    private const char SQUARE_ROCK_SYMB = '#';   // also -1
-    private const int SQUARE_ROCK = -1;   // also -1
-
-    private static void PrintBoard(int[,] board)
-    {
-        for (int x = 0; x < board.GetLength(0); x++)
-        {
-            for (int y = 0; y < board.GetLength(1); y++)
-            {
-                switch (board[x, y])
-                {
-                    case 1: Console.Write(ROUNDED_ROCK_SYMB); break;
-                    case 0: Console.Write(EMPTY_SPACE_SYMB); break;
-                    case -1: Console.Write(SQUARE_ROCK_SYMB); break;
-                    default: break;
-                }
-            }
-            Console.WriteLine();
-        }
-    }
+    private const char SQUARE_ROCK_SYMB = '#';
+    private const int SQUARE_ROCK = -1;
+    private const int BOARD_SIZE = 100;
 
     private static int[,] ParseInput(StringReader sr)
     {
-        int[,] board = new int[100, 100];
+        int[,] board = new int[BOARD_SIZE, BOARD_SIZE];
         string line = sr.ReadLine();
         int x = 0;
         while (line != null)
@@ -212,10 +194,10 @@ public static class Day14
     private static int CalculateTotalLoad(int[,] board)
     {
         int loadTotal = 0;
-        for (int x = 0; x < board.GetLength(0); x++) // rows
+        for (int x = 0; x < BOARD_SIZE; x++) // rows
         {
             int lineTotal = 0;
-            for (int y = 0; y < board.GetLength(1); y++) // columns
+            for (int y = 0; y < BOARD_SIZE; y++) // columns
             {
                 if (board[x, y] == ROUNDED_ROCK)
                 {
@@ -227,6 +209,29 @@ public static class Day14
         return loadTotal;
     }
 
+    private static bool BoardsAreEqual(int[,] boardA, int[,] boardB)
+    {
+        for (int x = 0; x < BOARD_SIZE; x++)
+        {
+            for (int y = 0; y < BOARD_SIZE; y++)
+            {
+                int comp = boardA[x, y] - boardB[x, y];
+                if (comp != 0)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static int[,] CreateBoardCopy(int[,] board)
+    {
+        int[,] newBoard = new int[BOARD_SIZE, BOARD_SIZE];
+        Array.Copy(board, newBoard, BOARD_SIZE * BOARD_SIZE);
+        return newBoard;
+    }
+
     private static int TotalLoadOnTheSupportBeams(int[,] board)
     {
         TiltBoard(board, TiltDirection.North);
@@ -236,12 +241,38 @@ public static class Day14
 
     private static int TotalLoadOnTheSupportBeamsAfterSpinCycling(int[,] board)
     {
-        for (int i = 0; i < 1000; i++) // After a few cycles no more changes happen so we can ignore the rest
+        int cycleStart = 0;
+        int cycleEnd = 0;
+
+        // Add the initial board before spinning
+        List<int[,]> boardsSeen = [];
+        boardsSeen.Add(CreateBoardCopy(board));
+
+        int index = 0;
+        while (true) //We will find a loop eventually
         {
             SpinCycle(board);
+            if (boardsSeen.Exists(b => BoardsAreEqual(b, board)))
+            {
+                // We found a board we've seen before. This
+                // means we found our loop because we started finding
+                // repeated boards.
+                cycleEnd = index;
+                break;
+            }
+            boardsSeen.Add(CreateBoardCopy(board));
+            index++;
         }
 
-        return CalculateTotalLoad(board);
+        // Find the first instance of the repeated board to get the start of the cycle
+        cycleStart = boardsSeen.FindIndex(b => BoardsAreEqual(b, board));
+
+        // Now we need to find the board that correspondes to the 1000000000 iteration
+        // and calculate it's load.
+        // We do this using a form of Min-Max normalization with rescaling
+        int[,] boardToCalculateLoad = boardsSeen[1000000000 % (cycleEnd - cycleStart) + cycleStart];
+
+        return CalculateTotalLoad(boardToCalculateLoad);
 
         static void SpinCycle(int[,] board)
         {
@@ -256,9 +287,10 @@ public static class Day14
     {
         using StringReader sr = new(File.ReadAllText("./day14/input.txt"));
 
-        int[,] board = ParseInput(sr);
+        int[,] boardDay1 = ParseInput(sr);
+        int[,] boardDay2 = CreateBoardCopy(boardDay1);
 
-        Console.WriteLine($"[AoC 2023 - Day 14 - Part 1] Result: {TotalLoadOnTheSupportBeams(board)}");
-        Console.WriteLine($"[AoC 2023 - Day 14 - Part 2] Result: {TotalLoadOnTheSupportBeamsAfterSpinCycling(board)}");
+        Console.WriteLine($"[AoC 2023 - Day 14 - Part 1] Result: {TotalLoadOnTheSupportBeams(boardDay1)}");
+        Console.WriteLine($"[AoC 2023 - Day 14 - Part 2] Result: {TotalLoadOnTheSupportBeamsAfterSpinCycling(boardDay2)}");
     }
 }
