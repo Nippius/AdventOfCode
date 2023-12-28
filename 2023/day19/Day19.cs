@@ -2,6 +2,8 @@ namespace AdventOfCode2023;
 
 public static class Day19
 {
+    private record Range(int Low = 1, int High = 4000) { };
+
     private class Part
     {
         public int X { get; init; }
@@ -16,6 +18,7 @@ public static class Day19
             {
                 // [0] -> category | [1] -> ranking
                 string[] categoryDescriptor = category.Split('=');
+
                 switch (categoryDescriptor[0])
                 {
                     case "x": X = int.Parse(categoryDescriptor[1]); break;
@@ -31,7 +34,6 @@ public static class Day19
     {
         public string Name { get; init; }
         public List<Rule> Rules { get; } = [];
-
         public Workflow(string workflowDescriptor)
         {
             int ruleStartDelimiterIndex = workflowDescriptor.IndexOf('{');
@@ -39,6 +41,7 @@ public static class Day19
             string[] rulesDescriptor = workflowDescriptor
                 .Substring(ruleStartDelimiterIndex + 1, workflowDescriptor.Length - ruleStartDelimiterIndex - 2)
                 .Split(",");
+
             foreach (string ruleDescriptor in rulesDescriptor)
             {
                 Rules.Add(new Rule(ruleDescriptor));
@@ -89,22 +92,15 @@ public static class Day19
         }
     }
 
-    private class Condition
+    private class Condition(string conditionDescriptor)
     {
-        private char partCategory;
-        private char @operator;
-        private int ranking;
-
-        public Condition(string conditionDescriptor)
-        {
-            partCategory = conditionDescriptor[0];
-            @operator = conditionDescriptor[1];
-            ranking = int.Parse(conditionDescriptor[2..]);
-        }
+        private readonly char partCategory = conditionDescriptor[0];
+        private readonly int ranking = int.Parse(conditionDescriptor[2..]);
+        public char Operator { get; init; } = conditionDescriptor[1];
 
         public bool Matches(Part part)
         {
-            return @operator switch
+            return Operator switch
             {
                 '<' => partCategory switch
                 {
@@ -126,21 +122,54 @@ public static class Day19
             };
         }
 
-        public int GetRange(char category, int range)
+        public (Range newCurrentRange, Range nextRange) GetRange(char category, Range currentRange)
         {
+            Range newCurrentRange = currentRange;
+            Range nextRange = currentRange;
+
             if (category != partCategory)
             {
-                return range;
+                return (newCurrentRange, nextRange);
             }
-            else
+
+            if (Operator == '<')
             {
-                return @operator switch
+                if (ranking > currentRange.Low && ranking < currentRange.High)
                 {
-                    '<' => (range > ranking) ? ranking - 1 : range,
-                    '>' => (range > ranking) ? range - ranking + 1 : range,
-                    _ => range
-                };
+                    newCurrentRange = currentRange with { Low = ranking, High = currentRange.High };
+                    nextRange = currentRange with { Low = currentRange.Low, High = ranking - 1 };
+                }
+                // else if (ranking < currentRange.Low)
+                // {
+                //     newCurrentRange = currentRange;
+                //     nextRange = currentRange with { Low = 1, High = 1 };
+                // }
+                // else if (ranking > currentRange.High)
+                // {
+                //     newCurrentRange = currentRange with { Low = 1, High = 1 };
+                //     nextRange = currentRange;
+                // }
             }
+            else if (Operator == '>')
+            {
+                if (ranking > currentRange.Low && ranking < currentRange.High)
+                {
+                    newCurrentRange = currentRange with { Low = currentRange.Low, High = ranking };
+                    nextRange = currentRange with { Low = ranking + 1, High = currentRange.High };
+                }
+                // else if (ranking < currentRange.Low)
+                // {
+                //     newCurrentRange = currentRange with { Low = 1, High = 1 };
+                //     nextRange = currentRange;
+                // }
+                // else if (ranking > currentRange.High)
+                // {
+                //     newCurrentRange = currentRange;
+                //     nextRange = currentRange with { Low = 1, High = 1 };
+                // }
+            }
+
+            return (newCurrentRange, nextRange);
         }
     }
 
@@ -153,7 +182,7 @@ public static class Day19
         // Create workflows
         while (line != string.Empty)
         {
-            Workflow newWorkflow = new Workflow(line);
+            Workflow newWorkflow = new(line);
             workflows[newWorkflow.Name] = newWorkflow;
             line = sr.ReadLine();
         }
@@ -171,9 +200,11 @@ public static class Day19
     private static int SumRatingOfAllAcceptedParts(Dictionary<string, Workflow> workflows, List<Part> parts)
     {
         int ratingsSum = 0;
+
         foreach (Part p in parts)
         {
             Workflow workflow = workflows["in"];
+
             while (true)
             {
                 string nextWorkflow = workflow.ApplyRulesToPart(p);
@@ -197,13 +228,12 @@ public static class Day19
         return ratingsSum;
     }
 
-    private static readonly Stack<(string name, int X, int M, int A, int S)> pendingWorkflows = [];
-
-    private static long CountDistinctCombinationsOfRatings(Dictionary<string, Workflow> workflows)
+    private static ulong CountDistinctCombinationsOfRatings(Dictionary<string, Workflow> workflows)
     {
-        pendingWorkflows.Push(("in", 4000, 4000, 4000, 4000));
+        Stack<(string name, Range X, Range M, Range A, Range S)> pendingWorkflows = [];
+        pendingWorkflows.Push(("in", new(), new(), new(), new()));
 
-        long combinationsCount = 4000L * 4000L * 4000L * 4000L;
+        ulong combinations = 0;
 
         while (pendingWorkflows.Count > 0)
         {
@@ -211,27 +241,34 @@ public static class Day19
 
             if (name == "R")
             {
-                combinationsCount -= X * M * A * S;
+                // do nothing...
             }
             else if (name == "A")
             {
-                // do nothing...?
+                combinations += (ulong)(X.High + 1 - X.Low)
+                             * (ulong)(M.High + 1 - M.Low)
+                             * (ulong)(A.High + 1 - A.Low)
+                             * (ulong)(S.High + 1 - S.Low);
             }
             else
             {
                 Workflow currentWorkflow = workflows[name];
 
-                
                 foreach (Rule rule in currentWorkflow.Rules)
                 {
                     if (rule.Condition is not null)
                     {
-                        int tempX = rule.Condition.GetRange('x', X);
-                        int tempM = rule.Condition.GetRange('m', X);
-                        int tempA = rule.Condition.GetRange('a', X);
-                        int tempS = rule.Condition.GetRange('s', X);
+                        var tempX = rule.Condition.GetRange('x', X);
+                        var tempM = rule.Condition.GetRange('m', M);
+                        var tempA = rule.Condition.GetRange('a', A);
+                        var tempS = rule.Condition.GetRange('s', S);
 
-                        pendingWorkflows.Push((rule.destinationWorkflow, tempX, tempM, tempA, tempS));
+                        pendingWorkflows.Push((rule.destinationWorkflow, tempX.nextRange, tempM.nextRange, tempA.nextRange, tempS.nextRange));
+
+                        X = tempX.newCurrentRange;
+                        M = tempM.newCurrentRange;
+                        A = tempA.newCurrentRange;
+                        S = tempS.newCurrentRange;
                     }
                     else
                     {
@@ -241,9 +278,7 @@ public static class Day19
             }
         }
 
-
-
-        return combinationsCount;
+        return combinations;
     }
 
     public static void Execute()
