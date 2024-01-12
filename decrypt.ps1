@@ -1,4 +1,4 @@
-# Encrypt input data and problem information
+# Decrypt input data and problem information
 
 $7ZipExecutablePath = 'C:\Program Files\7-Zip\7z.exe'
 $ZipPassword = $Env:AoCZipPassword
