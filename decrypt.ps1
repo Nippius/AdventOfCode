@@ -20,10 +20,12 @@ foreach($fileToUnzip in $filesToUnzip){
         "e",
         "-o`"$($fileToUnzip.DirectoryName)`""
         "`"$($fileToUnzip.FullName)`"",
+        "-aoa"
         "-p$($ZipPassword)"
     )
 
     $p = Start-Process $7ZipExecutablePath -ArgumentList $7ZipArgs -PassThru -WindowStyle 'Hidden'
+
     $parallelProcesses.Add($p)
 }
 
