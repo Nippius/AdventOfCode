@@ -2,19 +2,13 @@
 
 $7ZipExecutablePath = 'C:\Program Files\7-Zip\7z.exe'
 $ZipPassword = $Env:AoCZipPassword
-$parallelProcesses  = [System.Collections.Generic.List[System.Diagnostics.Process]]::new()
+$parallelProcesses = [System.Collections.Generic.List[System.Diagnostics.Process]]::new()
 
-if($false -eq (Test-Path $7ZipExecutablePath)){
-    Write-Error "7zip not found."
-}
+if ($false -eq (Test-Path $7ZipExecutablePath)) { Write-Error "7zip not found." }
+if ([string]::IsNullOrEmpty($ZipPassword)) { Write-Error "Zip password not defined" }
 
-if([string]::IsNullOrEmpty($ZipPassword))
-{
-    Write-Error "Zip password not defined"
-}
-
-$filesToUnzip = gci -Include ('input.zip','problem.zip') -r
-foreach($fileToUnzip in $filesToUnzip){
+$filesToUnzip = Get-ChildItem -Include ('input.zip', 'problem.zip') -r
+foreach ($fileToUnzip in $filesToUnzip) {
 
     $7ZipArgs = @(
         "e",

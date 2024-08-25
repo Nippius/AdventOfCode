@@ -2,25 +2,18 @@
 
 $7ZipExecutablePath = 'C:\Program Files\7-Zip\7z.exe'
 $ZipPassword = $Env:AoCZipPassword
-$parallelProcesses  = [System.Collections.Generic.List[System.Diagnostics.Process]]::new()
+$parallelProcesses = [System.Collections.Generic.List[System.Diagnostics.Process]]::new()
 
-if($false -eq (Test-Path $7ZipExecutablePath)){
-    Write-Error "7zip not found."
-}
+if ($false -eq (Test-Path $7ZipExecutablePath)) { Write-Error "7zip not found." }
+if ([string]::IsNullOrEmpty($ZipPassword)) { Write-Error "Zip password not defined" }
 
-if([string]::IsNullOrEmpty($ZipPassword))
-{
-    Write-Error "Zip password not defined"
-}
-
-$filesToZip = gci -Include ('input.txt','problem.txt') -r
-foreach($fileToZip in $filesToZip){
+$filesToZip = Get-ChildItem -Include ('input.txt', 'problem.txt') -r
+foreach ($fileToZip in $filesToZip) {
     
     $zipedFile = Join-Path $fileToZip.DirectoryName "$($fileToZip.BaseName).zip"
 
-    if(($fileToZip.Length -eq 0) -or (Test-Path $zipedFile))
-    {
-        Write-Host "[$fileToZip] Empty or encrypted file already exists."
+    if (($fileToZip.Length -eq 0) -or (Test-Path $zipedFile)) {
+        Write-Host "[$fileToZip] Empty or encrypted file already exists. Skipped."
         continue
     }
 
