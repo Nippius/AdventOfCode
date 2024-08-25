@@ -15,7 +15,14 @@ if([string]::IsNullOrEmpty($ZipPassword))
 
 $filesToZip = gci -Include ('input.txt','problem.txt') -r
 foreach($fileToZip in $filesToZip){
+    
     $zipedFile = Join-Path $fileToZip.DirectoryName "$($fileToZip.BaseName).zip"
+
+    if(($fileToZip.Length -eq 0) -or (Test-Path $zipedFile))
+    {
+        Write-Host "[$fileToZip] Empty or encrypted file already exists."
+        continue
+    }
 
     $7ZipArgs = @(
         "a",
