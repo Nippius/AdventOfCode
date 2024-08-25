@@ -8,20 +8,22 @@ public static class Day07
 
     private static HandType GetHandType(string hand, bool handleJokers)
     {
-        Dictionary<char, int> cards = [];
-        cards.Add('2', 0);
-        cards.Add('3', 0);
-        cards.Add('4', 0);
-        cards.Add('5', 0);
-        cards.Add('6', 0);
-        cards.Add('7', 0);
-        cards.Add('8', 0);
-        cards.Add('9', 0);
-        cards.Add('T', 0);
-        cards.Add('J', 0);
-        cards.Add('Q', 0);
-        cards.Add('K', 0);
-        cards.Add('A', 0);
+        Dictionary<char, int> cards = new()
+        {
+            { '2', 0 },
+            { '3', 0 },
+            { '4', 0 },
+            { '5', 0 },
+            { '6', 0 },
+            { '7', 0 },
+            { '8', 0 },
+            { '9', 0 },
+            { 'T', 0 },
+            { 'J', 0 },
+            { 'Q', 0 },
+            { 'K', 0 },
+            { 'A', 0 }
+        };
 
         foreach (char c in hand)
         {
