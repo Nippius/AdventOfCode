@@ -9,23 +9,23 @@ if(Test-Path (Join-Path . $Year)){
 }
 
 Write-Host "[>] Creating folder $Year..."
-mkdir $Year | Out-Null
-pushd $Year
+New-Item "$Year" -ItemType Directory | Out-Null
+Push-Location $Year
 
 Write-Host "[>] Creating solution and respective project..."
 dotnet new console | Out-Null
 dotnet new sln | Out-Null
 dotnet sln add . | Out-Null
 
-Write-Host "[>] Removing <RootNamespace> from $Year.csproj"
-(Get-Content .\2024.csproj) | % { 
+Write-Host "[>] Removing <RootNamespace> from $Year.csproj..."
+(Get-Content ".\$($Year).csproj") | ForEach-Object { 
     if($_ -notlike '*RootNamespace*'){
          $_
     }
 } | Set-Content -Path ".\$Year.csproj"
 
 Write-Host "[>] Adding Program.cs..."
-Remove-Item 'Program.cs'
+Remove-Item 'Program.cs' # This was added by the 'dotnet new console' step above
 $programContents = 
 @"
 using AdventOfCode$Year;
@@ -62,14 +62,24 @@ Write-Host "[>] Creating dummy implementations for each day..."
 foreach($day in 1..25)
 {
     $formatedDay = '{0:d2}' -f $day
-    mkdir "day$formatedDay" | Out-Null
-    pushd "day$formatedDay"
+    New-Item "day$formatedDay" -ItemType Directory | Out-Null
+    Push-Location "day$formatedDay"
     $classContents =
     @"
 namespace AdventOfCode$Year;
 
 public static class Day$formatedDay
 {
+    public static int Part1(int sum)
+    {
+        return sum;
+    }
+
+    public static int Part2(int sum)
+    {
+        return sum;
+    }
+
     public static void Execute()
     {
         int sum = 0;
@@ -84,19 +94,19 @@ public static class Day$formatedDay
             line = sr?.ReadLine();
         }
         
-        Console.WriteLine($"[AoC $Year - Day $formatedDay - Part 1] Result: {sum}");
-        Console.WriteLine($"[AoC $Year - Day $formatedDay - Part 2] Result: {sum}");
+        Console.WriteLine($"[AoC $Year - Day $formatedDay - Part 1] Result: {Part1(sum)}");
+        Console.WriteLine($"[AoC $Year - Day $formatedDay - Part 2] Result: {Part2(sum)}");
     }
 }
 "@
     Set-Content -Path "Day$formatedDay.cs" -Value $classContents -NoNewLine
-    echo '' > input.txt
-    echo '' > problem.txt
-    popd
+    New-Item input.txt | Out-Null
+    New-Item problem.txt | Out-Null
+    Pop-Location
 }
 
-Write-Host "[>] Compiling..."
-dotnet build | Out-Null
+Write-Host "[>] Compiliing and running the new project..."
+dotnet run
 
 Write-Host "[>] Done"
-popd
+Pop-Location
