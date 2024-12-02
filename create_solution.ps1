@@ -70,12 +70,12 @@ namespace AdventOfCode$Year;
 
 public static class Day$formatedDay
 {
-    public static int Part1(int sum)
+    private static int Part1(int sum)
     {
         return sum;
     }
 
-    public static int Part2(int sum)
+    private static int Part2(int sum)
     {
         return sum;
     }
