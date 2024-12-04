@@ -5,16 +5,14 @@ public static class Day02
     private static bool LevelsAreSafe(IList<int> levels)
     {
         bool originalOrdering = levels[0] < levels[1]; // true -> ascending | false -> descending
+
         for (int i = 1; i < levels.Count; i++)
         {
             int levelRange = Math.Abs(levels[i - 1] - levels[i]);
             bool levelRangeOutsideLimits = levelRange < 1 || levelRange > 3;
             bool orderChanged = originalOrdering != levels[i - 1] < levels[i];
 
-            if (levelRangeOutsideLimits || orderChanged)
-            {
-                return false;
-            }
+            if (levelRangeOutsideLimits || orderChanged) { return false; }
         }
 
         return true;
@@ -29,6 +27,7 @@ public static class Day02
         {
             if (LevelsAreSafe([.. levels.Where((_, j) => j != i)])) return true;
         }
+
         return false;
     }
 

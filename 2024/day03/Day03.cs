@@ -7,11 +7,11 @@ public static partial class Day03
     [GeneratedRegex("""(?<inst>(?<op>mul)\((?<op1>\d+),(?<op2>\d+)\))|(?<op>do)\(\)|(?<op>don\'t)\(\)""")]
     private static partial Regex CorruptedMemoryInstructionParser();
 
-    private static void ExecuteInstructionsInCorruptedMemory(string corruptedMemory, out int partOneResult, out int partTwoResult)
+    private static void ExecuteInstructionsInCorruptedMemory(string corruptedMemory, out int multiplicationsSum, out int multiplicationsSumWithEnableInstructions)
     {
         bool instructionsAreEnabled = true;
-        partOneResult = 0;
-        partTwoResult = 0;
+        multiplicationsSum = 0;
+        multiplicationsSumWithEnableInstructions = 0;
 
         foreach (Match instruction in CorruptedMemoryInstructionParser().Matches(corruptedMemory))
         {
@@ -21,8 +21,8 @@ public static partial class Day03
             else
             {
                 int instructionExecutionResult = int.Parse(groups["op1"].Value) * int.Parse(groups["op2"].Value);
-                partOneResult += instructionExecutionResult;
-                if(instructionsAreEnabled){ partTwoResult += instructionExecutionResult;}
+                multiplicationsSum += instructionExecutionResult;
+                if(instructionsAreEnabled){ multiplicationsSumWithEnableInstructions += instructionExecutionResult;}
             }
         }
     }
@@ -32,9 +32,9 @@ public static partial class Day03
         // Assume the \n in the file are part of the corruption. Think of it as single long string
         string memoryContents = File.ReadAllText("./day03/input.txt");
 
-        ExecuteInstructionsInCorruptedMemory(memoryContents, out int partOneResult, out int partTwoResult);
+        ExecuteInstructionsInCorruptedMemory(memoryContents, out int multiplicationsSum, out int multiplicationsSumWithEnableInstructions);
 
-        Console.WriteLine($"[AoC 2024 - Day 03 - Part 1] Result: {partOneResult}");
-        Console.WriteLine($"[AoC 2024 - Day 03 - Part 2] Result: {partTwoResult}");
+        Console.WriteLine($"[AoC 2024 - Day 03 - Part 1] Result: {multiplicationsSum}");
+        Console.WriteLine($"[AoC 2024 - Day 03 - Part 2] Result: {multiplicationsSumWithEnableInstructions}");
     }
 }
