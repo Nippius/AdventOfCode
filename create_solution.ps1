@@ -28,7 +28,31 @@ Write-Host "[>] Adding Program.cs..."
 Remove-Item 'Program.cs' # This was added by the 'dotnet new console' step above
 $programContents = 
 @"
-using AdventOfCode$Year;
+using AdventOfCode$Year.Day01;
+using AdventOfCode$Year.Day02;
+using AdventOfCode$Year.Day03;
+using AdventOfCode$Year.Day04;
+using AdventOfCode$Year.Day05;
+using AdventOfCode$Year.Day06;
+using AdventOfCode$Year.Day07;
+using AdventOfCode$Year.Day08;
+using AdventOfCode$Year.Day09;
+using AdventOfCode$Year.Day10;
+using AdventOfCode$Year.Day11;
+using AdventOfCode$Year.Day12;
+using AdventOfCode$Year.Day13;
+using AdventOfCode$Year.Day14;
+using AdventOfCode$Year.Day15;
+using AdventOfCode$Year.Day16;
+using AdventOfCode$Year.Day17;
+using AdventOfCode$Year.Day18;
+using AdventOfCode$Year.Day19;
+using AdventOfCode$Year.Day20;
+using AdventOfCode$Year.Day21;
+using AdventOfCode$Year.Day22;
+using AdventOfCode$Year.Day23;
+using AdventOfCode$Year.Day24;
+using AdventOfCode$Year.Day25;
 
 Day01.Execute();
 Day02.Execute();
@@ -66,10 +90,24 @@ foreach($day in 1..25)
     Push-Location "day$formatedDay"
     $classContents =
     @"
-namespace AdventOfCode$Year;
+namespace AdventOfCode$Year.Day$formatedDay;
 
 public static class Day$formatedDay
 {
+    private static List<string> ParseInput(StringReader sr){
+        List<string> input = [];
+        string? line = sr?.ReadLine();
+        while (line is not null)
+        {
+            if (line != string.Empty)
+            {
+                input.Add(line);
+            }
+            line = sr?.ReadLine();
+        }
+        return input;
+    }
+
     private static int Part1(int sum)
     {
         return sum;
@@ -84,15 +122,8 @@ public static class Day$formatedDay
     {
         int sum = 0;
         using StringReader? sr = new(File.ReadAllText("./day$formatedDay/input.txt"));
-        string? line = sr?.ReadLine();
-        while (line is not null)
-        {
-            if (line != string.Empty)
-            {
-                // TODO
-            }
-            line = sr?.ReadLine();
-        }
+        
+        List<string> input = ParseInput(sr);
         
         Console.WriteLine($"[AoC $Year - Day $formatedDay - Part 1] Result: {Part1(sum)}");
         Console.WriteLine($"[AoC $Year - Day $formatedDay - Part 2] Result: {Part2(sum)}");
