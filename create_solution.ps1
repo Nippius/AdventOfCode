@@ -95,17 +95,20 @@ namespace AdventOfCode$Year.Day$formatedDay;
 public static class Day$formatedDay
 {
     private static List<string> ParseInput(StringReader sr){
-        List<string> input = [];
-        string? line = sr?.ReadLine();
-        while (line is not null)
+        using(sr)
         {
-            if (line != string.Empty)
+            List<string> input = [];
+            string? line = sr?.ReadLine();
+            while (line is not null)
             {
-                input.Add(line);
+                if (line != string.Empty)
+                {
+                    input.Add(line);
+                }
+                line = sr?.ReadLine();
             }
-            line = sr?.ReadLine();
+            return input;
         }
-        return input;
     }
 
     private static int Part1(int sum)
