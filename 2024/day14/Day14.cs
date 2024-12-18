@@ -128,8 +128,10 @@ public static partial class Day14
         {
             workingTasks.Add(Task.Run(async () =>
             {
-                while (token.IsCancellationRequested is not true)
+                while (true)
                 {
+                    token.ThrowIfCancellationRequested();
+
                     if (gridQueue.TryDequeue(out (int seconds, byte[] grid) work))
                     {
                         entropyQueue.Enqueue((work.seconds, await CalculateEntropyAsync(work.grid)));
@@ -139,7 +141,7 @@ public static partial class Day14
         }
 
         int seconds = 1;
-        while (token.IsCancellationRequested is not true)
+        while (true)
         {
             // Check if there's any results for us to process
             if (entropyQueue.TryDequeue(out (int seconds, long entropy) calculatedEntropy))
@@ -147,7 +149,13 @@ public static partial class Day14
                 if (calculatedEntropy.entropy < ENTROPY_THRESHOLD)
                 {
                     cts.Cancel();
-                    await Task.WhenAll(workingTasks);
+                    await Task.WhenAll(workingTasks).ContinueWith(task =>
+                    {
+                        if (!task.IsCanceled && task.IsFaulted)
+                        {
+                            Console.WriteLine(task.Exception);
+                        }
+                    });
 
                     return calculatedEntropy.seconds;
                 }
@@ -164,8 +172,6 @@ public static partial class Day14
 
             gridQueue.Enqueue((seconds++, grid));
         }
-
-        return 0;
     }
 
     /*
