@@ -1,6 +1,9 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace AdventOfCode2024;
 
@@ -9,11 +12,12 @@ public static partial class Day14
     [GeneratedRegex("""\d+|-\d+""")]
     private static partial Regex NumberParser();
 
+    // This value was found via trial and error by looking at the ontropy of the grid after each second
+    private const int ENTROPY_THRESHOLD = 400;
+    private const int SIMULATION_SECONDS = 100;
     private const int MAX_GRID_WIDTH = 101;
     private const int MAX_GRID_HEIGHT = 103;
-    // private const int MAX_GRID_WIDTH = 11;
-    // private const int MAX_GRID_HEIGHT = 7;
-    private static readonly int SIMULATION_SECONDS = 100;
+    private static readonly int MAX_CONCURENT_TASKS = Environment.ProcessorCount;
 
     private class Robot(Vector2 position, Vector2 velocity) : ICloneable
     {
@@ -111,55 +115,90 @@ public static partial class Day14
             * CountRobotsInQuadrant(robots, new Vector2(0, (MAX_GRID_HEIGHT / 2) + 1), new Vector2(MAX_GRID_WIDTH / 2, MAX_GRID_HEIGHT));
     }
 
-
-    private static int FindEasterEgg(List<Robot> robots)
+    private static async Task<int> FindEasterEggAsync(List<Robot> robots)
     {
-        int numberOfSecondsUntilEasterEggFound = -1;
-        long lowestEntropyFound = int.MaxValue;
+        ConcurrentQueue<(int seconds, byte[] grid)> gridQueue = new(); // Queue of grids to process
+        ConcurrentQueue<(int seconds, long entropy)> entropyQueue = new(); // Queue of entropy results to process
+        using CancellationTokenSource cts = new();
+        CancellationToken token = cts.Token;
 
-        int i = 1;
-        while (lowestEntropyFound > 400) // Kinda arbitrary but based on the output
+        // Launch the tasks that will calculate the entropy of the grids
+        List<Task> workingTasks = [];
+        for (int i = 0; i < MAX_CONCURENT_TASKS; i++)
         {
+            workingTasks.Add(Task.Run(async () =>
+            {
+                while (token.IsCancellationRequested is not true)
+                {
+                    if (gridQueue.TryDequeue(out (int seconds, byte[] grid) work))
+                    {
+                        entropyQueue.Enqueue((work.seconds, await CalculateEntropyAsync(work.grid)));
+                    }
+                }
+            }));
+        }
+
+        int seconds = 1;
+        while (token.IsCancellationRequested is not true)
+        {
+            // Check if there's any results for us to process
+            if (entropyQueue.TryDequeue(out (int seconds, long entropy) calculatedEntropy))
+            {
+                if (calculatedEntropy.entropy < ENTROPY_THRESHOLD)
+                {
+                    cts.Cancel();
+                    await Task.WhenAll(workingTasks);
+
+                    return calculatedEntropy.seconds;
+                }
+            }
+
             byte[] grid = new byte[MAX_GRID_WIDTH * MAX_GRID_HEIGHT];
 
+            // While waiting for the results to come in generate new grids to calculate the entropy in the future
             foreach (Robot robot in robots)
             {
                 robot.Move();
                 grid[((int)robot.Position.X * MAX_GRID_WIDTH) + (int)robot.Position.Y]++;
             }
 
-            long gridEntropy = CalculateEntropy(grid);
-            if (gridEntropy < lowestEntropyFound)
-            {
-                lowestEntropyFound = gridEntropy;
-                numberOfSecondsUntilEasterEggFound = i;
-            }
-
-            i++;
+            gridQueue.Enqueue((seconds++, grid));
         }
-        return numberOfSecondsUntilEasterEggFound;
+
+        return 0;
     }
 
-    private static long CalculateEntropy(byte[] grid)
+    /*
+        In simple terms, entropy is the amount of randomness.
+        A file with a lot of random stuff is hard to compress because there aren't many repeating bytes, 
+            resulting in a large file. This means the original file has high entropy.
+        On the other end, a file with little random stuff can be highly compress resulting 
+            in a small file. This means the original file has low entropy.
+        To form the easter egg, lots of robots must end up side-by-side to form an image resulting in 
+            a highly compressible "file", or in other words, a low entropy value.
+    */
+    private static async Task<long> CalculateEntropyAsync(byte[] grid)
     {
-        MemoryStream unCompressedGridStream, compressedGridStream;
-        DeflateStream compressedStream;
-        unCompressedGridStream = new(grid);
-        compressedGridStream = new();
-        compressedStream = new DeflateStream(compressedGridStream, CompressionLevel.SmallestSize);
-        unCompressedGridStream.CopyTo(compressedStream);
-        compressedStream.Flush();
-        long tempSize = compressedGridStream.Length;
+        using MemoryStream unCompressedGridStream = new(grid);
+        using MemoryStream compressedGridStream = new();
+        using DeflateStream compressedStream = new(compressedGridStream, CompressionLevel.SmallestSize);
+
+        await unCompressedGridStream.CopyToAsync(compressedStream);
+        await compressedStream.FlushAsync();
+
+        long entropy = compressedGridStream.Length;
+
         compressedStream.Close();
-        return tempSize;
+
+        return entropy;
     }
 
-    public static void Execute()
+    public static async Task ExecuteAsync()
     {
         List<Robot> robots = ParseInput(new StringReader(File.ReadAllText("./day14/input.txt")));
         List<Robot> robotsCopy = [.. robots.Select(x => (Robot)x.Clone())];
 
         Console.WriteLine($"[AoC 2024 - Day 14 - Part 1] Result: {CalculateSafetyFactor(robots)}");
-        Console.WriteLine($"[AoC 2024 - Day 14 - Part 2] Result: {FindEasterEgg(robotsCopy)}");
+        Console.WriteLine($"[AoC 2024 - Day 14 - Part 2] Result: {await FindEasterEggAsync(robotsCopy)}");
     }
 }
