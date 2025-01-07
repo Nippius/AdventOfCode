@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace AdventOfCode2024;
 
@@ -27,7 +28,7 @@ public static class Day07
 
     private static Dictionary<(int, int), List<List<char>>> OperationSetsCache = [];
 
-    // TODO: Convert to yield return so that it only generates the required operationSets
+    // example: 81 40 27 -> numberOfOperations = 2
     private static List<List<char>> GenerateOperationSets(int numberOfDistinctOperators, int numberOfOperations)
     {
         List<List<char>> operationSets;
@@ -35,11 +36,11 @@ public static class Day07
         if (OperationSetsCache.TryGetValue((numberOfDistinctOperators, numberOfOperations), out operationSets!) is false)
         {
             operationSets = [];
-            char[] operators = ['+', '*', '|'];
+            char[] operators = ['-', '/', '|'];
             int[] counters = new int[numberOfOperations];
-            int totalOperationsSets = (int)Math.Pow(numberOfDistinctOperators, numberOfOperations);
+            int totalNumberOfOperationSets = (int)Math.Pow(numberOfDistinctOperators, numberOfOperations);
 
-            for (int i = 0; i < totalOperationsSets; i++)
+            for (int i = 0; i < totalNumberOfOperationSets; i++)
             {
                 List<char> operationSet = [];
 
@@ -55,7 +56,7 @@ public static class Day07
 
             OperationSetsCache.Add((numberOfDistinctOperators, numberOfOperations), operationSets);
         }
-        
+
         return operationSets;
     }
 
@@ -99,40 +100,78 @@ public static class Day07
 
         foreach (List<char> operationSet in operationSets)
         {
-            int position = 0;
-            long intermediateResult = equation.Numbers[position++];
+            int position = equation.Numbers.Length - 1;
+            long intermediateResult = equation.Value;
 
+            // OperationSets are simetric (in a sense) so, if it's easier to reason about,
+            //  think of this loop as applying the operations in reverse order.
+            //  Example:
+            //      For 3 operations with 2 positions, the sets will be:
+            //          +, +
+            //          +, *
+            //          +, |
+            //          *, +
+            //          *, *
+            //          *, |
+            //          |, +
+            //          |, *
+            //          |, |
+            //      So it doesn't matter if we star by doing |, * or *, |
+            //          because both exist in the set and both will be tested
             foreach (char operation in operationSet)
             {
                 switch (operation)
                 {
-                    case '+':
+                    case '-':
                         {
-                            intermediateResult += equation.Numbers[position];
+                            intermediateResult -= equation.Numbers[position];
                             break;
                         }
-                    case '*':
+                    case '/':
                         {
-                            intermediateResult *= equation.Numbers[position];
+                            if (intermediateResult % equation.Numbers[position] == 0)
+                            {
+                                intermediateResult /= equation.Numbers[position];
+                            }
+                            else
+                            {
+                                goto nextOperation; // Skip remaining operations because they aren't valid anyway
+                            }
                             break;
                         }
                     case '|':
                         {
-                            intermediateResult = long.Parse($"{intermediateResult}{equation.Numbers[position]}");
+                            // Splitting a number without using strings
+                            // https://www.tutorialspoint.com/check-if-a-number-ends-with-another-number-or-not
+                            long ending = equation.Numbers[position];
+                            long digits = (long)Math.Floor(Math.Log10(ending) + 1);
+                            long divisor = (long)Math.Pow(10, digits);
+                            if (intermediateResult % divisor == ending)
+                            {
+                                intermediateResult = (long)Math.Floor((double)(intermediateResult / divisor));
+                            }
+                            else
+                            {
+                                goto nextOperation; // Skip remaining operations because they aren't valid anyway
+                            }
                             break;
                         }
                     default: break;
                 }
 
-                if (intermediateResult == equation.Value)
+                if (intermediateResult == equation.Numbers[0])
                 {
                     return true;
-                }else if(intermediateResult > equation.Value){
+                }
+                else if (intermediateResult < equation.Numbers[0])
+                {
                     break;
                 }
 
-                position++;
+                position--;
             }
+        nextOperation:
+            ;
         }
 
         return false;
@@ -140,15 +179,7 @@ public static class Day07
 
     private static long SumValidTestValues(ReadOnlyCollection<Equation> equations, int numberOfDistinctOperators)
     {
-        long totalCallibration = 0;
-        foreach (Equation eq in equations)
-        {
-            if (EquationMatchesTestValue(eq, numberOfDistinctOperators))
-            {
-                totalCallibration += eq.Value;
-            }
-        }
-        return totalCallibration;
+        return equations.Where(eq => EquationMatchesTestValue(eq, numberOfDistinctOperators)).Sum(eq => eq.Value);
     }
 
     public static void Execute()
