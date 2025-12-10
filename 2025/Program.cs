@@ -24,11 +24,11 @@ using AdventOfCode2025.Day23;
 using AdventOfCode2025.Day24;
 using AdventOfCode2025.Day25;
 
-// Day01.Execute();
-// Day02.Execute();
-// Day03.Execute();
+Day01.Execute();
+Day02.Execute();
+Day03.Execute();
 Day04.Execute();
-// Day05.Execute();
+Day05.Execute();
 // Day06.Execute();
 // Day07.Execute();
 // Day08.Execute();
